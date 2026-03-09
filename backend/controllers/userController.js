@@ -52,14 +52,14 @@ const login = async (req , res) => {
 
         }
 
-        if (user.isActive){
+        if (!user.isActive){
             return res.status(400).json({msg :"Account isn't Active"})
             
         }
 
         //Check the password
 
-        const isMatch = await user.comparePassword(password);
+        const isMatch = await user.matchPassword(password);
         if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
