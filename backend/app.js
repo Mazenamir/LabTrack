@@ -2,7 +2,9 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-require("dotenv").config();
+const testTypeRoutes = require("./routes/testTypeRoutes"); 
+
+// require("dotenv").config(); 
 
 const app = express();
 
@@ -35,6 +37,7 @@ dbConnect();
 // ─── Import Routes ─────────────────────────────────────────────
 const userRoutes = require("./routes/userRoutes");
 app.use("/api/users", userRoutes);
+app.use("/api/tests", testTypeRoutes); 
 
 
 

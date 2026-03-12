@@ -64,6 +64,8 @@ const login = async (req , res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
+
+    
     // Generate token
     const token = generateToken(user);
 
@@ -82,6 +84,21 @@ const login = async (req , res) => {
     }
 };
 
+
+//GetMe => to Get the user-Profile (Admin - Patient ....)
+
+    const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(500).json({ msg: "Server Error", error: error.message });
+  }
+};
+
 module.exports = {
-    register , login
+    register , login , getMe
 };
