@@ -15,7 +15,7 @@ doctorId : {
 technicianId : {
     type  : mongoose.Schema.Types.ObjectId ,
     ref : "User" , 
-    required : true ,
+    required : false , // ← Changed to false (will be assigned later)
 } ,
 status : {
     type : String , 
@@ -40,9 +40,9 @@ notes : {
 
 },
 
-},{timestamps : true})
+},{timestamps : true}) ;
 
 
-const TestRequest = mongoose.model("TestRequest" , TestRequest)
+const TestRequest = mongoose.model("TestRequest" , testRequestSchema)
 
 module.exports = TestRequest ; 

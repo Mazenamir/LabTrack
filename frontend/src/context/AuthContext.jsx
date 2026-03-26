@@ -1,49 +1,28 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import api from "../api/axios";
+import { createContext, useState, useContext } from 'react';
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
+
+// 1. ADD THIS LINE: This allows other files to use the context easily
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
-  const [loading, setLoading] = useState(true);
 
-  // ─── Load user on app start if token exists ──────────────────
-  useEffect(() => {
-    const loadUser = async () => {
-      if (token) {
-        try {
-          const res = await api.get("/users/me");
-          setUser(res.data.user);
-        } catch (error) {
-          logout();
-        }
-      }
-      setLoading(false);
-    };
-    loadUser();
-  }, [token]);
-
-  // ─── Login ───────────────────────────────────────────────────
-  const login = (userData, userToken) => {
-    localStorage.setItem("token", userToken);
-    setToken(userToken);
+  const login = (userData, token) => {
     setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('token', token); 
   };
 
-  // ─── Logout ──────────────────────────────────────────────────
   const logout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
     setUser(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
-
-// ─── Custom hook ──────────────────────────────────────────────
-export const useAuth = () => useContext(AuthContext);

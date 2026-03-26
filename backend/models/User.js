@@ -6,13 +6,13 @@ const bcrypt = require('bcrypt');
 const userSchema = new  mongoose.Schema( {
     name : {
         type : String ,
-        require : true ,
+        required : true ,
         trim : true
     } , 
 
     email : {
         type : String ,
-        require : true ,
+        required : true ,
         trim : true ,
         unique : true ,
         lowercase : true ,
@@ -20,13 +20,13 @@ const userSchema = new  mongoose.Schema( {
 
     password : {
         type : String , 
-        require : true ,
+        requiredd : true ,
 
     } ,
 
     role : {
         type : String ,
-        require : true ,
+        required : true ,
         enum: ["admin", "doctor", "technician", "patient"],
         default : "patient"
     },
@@ -43,7 +43,7 @@ const userSchema = new  mongoose.Schema( {
       type: Boolean,
       default: true,
     },
-},{timestamp : true})
+},{timestamps : true})
 
 // hash password before save
 // userSchema.pre("save", async function (next) {
