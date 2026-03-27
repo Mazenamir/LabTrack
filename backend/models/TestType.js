@@ -3,14 +3,14 @@ const testTypeSchema = new mongoose.Schema({
 
     name : {
         type : String ,
-        require : true ,
+        required : true ,
         trim : true ,
         unique : true ,
     } , 
 
-    catagory  : { 
+    category  : { 
         type : String  , 
-        require : true ,
+        required : true ,
         trim  : true ,
     },
     description : {
@@ -25,7 +25,7 @@ const testTypeSchema = new mongoose.Schema({
     },
     unit  : {
         type : String , 
-        deafult  : null , 
+        default  : null , 
     },
      turnaroundDays: {
       type: Number,

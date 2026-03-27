@@ -5,19 +5,19 @@ const tesrRequestItemSchema = new mongoose.Schema(
 {
 testRequestId : {
         type : mongoose.Schema.Types.ObjectId,
-        ref : "testRequest" , 
+        ref : "TestRequest" , 
         required : true ,
     } , 
 
     testTypeId : {
         type : mongoose.Schema.Types.ObjectId , 
-        ref : "testTypes" , 
+        ref : "TestType" , 
         required : true , 
 
     }  ,
     resultValue : { 
-        type : String , 
-        required : true , 
+        type : Number , 
+        required : false , 
         trim : true , 
         default : null ,
 
@@ -35,8 +35,8 @@ testRequestId : {
 {timestamps : true})
 
 
-const testRequestItem = mongoose.model ("tesrRequestItem" , tesrRequestItemSchema)
+const testRequestItem = mongoose.model ("testRequestItem" , tesrRequestItemSchema)
 
-modules.exports = testRequestItem ; 
+module.exports = testRequestItem ; 
 
 

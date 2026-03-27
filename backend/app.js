@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const testTypeRoutes = require("./routes/testTypeRoutes"); 
+const requestRoutes = require("./routes/requestRoutes");
 
 // require("dotenv").config(); 
 
@@ -38,7 +39,7 @@ dbConnect();
 const userRoutes = require("./routes/userRoutes");
 app.use("/api/users", userRoutes);
 app.use("/api/tests", testTypeRoutes); 
-
+app.use("/api/requests", requestRoutes);
 
 
 // ─── Start Server ─────────────────────────────────────────────
