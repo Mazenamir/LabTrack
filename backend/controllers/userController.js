@@ -27,10 +27,17 @@ const register = async (req ,res) => {
 
     }
 
+    
     const user = await User.create({
-        name, email, password, role, specialization, phone,
+      name, email, password, role, specialization, phone,
     }) ; 
-
+    
+    // In userController.register, after creating the user:
+    if (role === "patient") {
+      const count = await User.countDocuments({ role: "patient" });
+      user.patientCode = `P-${String(count).padStart(3, "0")}`;
+      await user.save();
+    }
     res.status(201).json({msg :"User registered successfully"  , user }) ;
 
 }

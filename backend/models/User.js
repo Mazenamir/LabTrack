@@ -9,7 +9,8 @@ const userSchema = new  mongoose.Schema( {
         required : true ,
         trim : true
     } , 
-
+    
+    
     email : {
         type : String ,
         required : true ,
@@ -17,14 +18,18 @@ const userSchema = new  mongoose.Schema( {
         unique : true ,
         lowercase : true ,
     },
-
+    
     password : {
         type : String , 
         requiredd : true ,
-
+        
     } ,
-
-    role : {
+    
+    patientCode: { 
+        type: String, 
+        unique: true, 
+        sparse: true }
+    ,role : {
         type : String ,
         required : true ,
         enum: ["admin", "doctor", "technician", "patient"],

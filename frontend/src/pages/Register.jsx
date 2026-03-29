@@ -25,7 +25,6 @@ const Register = () => {
     e.preventDefault();
     setError("");
 
-    // Client side validation
     if (formData.password !== formData.confirmPassword) {
       return setError("Passwords do not match");
     }
@@ -44,31 +43,54 @@ const Register = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center px-4 py-8">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-8">
+  const inputStyle = {
+    backgroundColor: "#252836",
+    color: "#ffffff",
+    borderRadius: "10px",
+    padding: "12px 16px",
+    border: "none",
+  };
 
+  const labelStyle = {
+    color: "#adb5bd",
+    fontSize: "14px",
+  };
+
+  return (
+    <div
+      className="min-vh-100 d-flex align-items-center justify-content-center py-5"
+      style={{ backgroundColor: "#0f1117" }}
+    >
+      <div
+        className="card p-4 border-0 shadow-lg"
+        style={{
+          width: "100%",
+          maxWidth: "460px",
+          backgroundColor: "#1a1d27",
+          borderRadius: "16px",
+        }}
+      >
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-4xl">🧬</span>
-            <h1 className="text-3xl font-bold text-blue-600">LabTrack</h1>
-          </div>
-          <p className="text-gray-400 text-sm">Create your account</p>
+        <div className="text-center mb-4">
+          <h2 className="fw-bold" style={{ color: "#4e8ef7" }}>🧬 LabTrack</h2>
+          <p className="small" style={{ color: "#6c757d" }}>Create your account</p>
         </div>
 
         {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-5 text-sm flex items-center gap-2">
-            <span>⚠️</span> {error}
+          <div
+            className="alert border-0 py-2 small mb-3"
+            style={{ backgroundColor: "#2d1b1b", color: "#ff6b6b" }}
+          >
+            ⚠️ {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit}>
 
           {/* Full Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="mb-3">
+            <label className="form-label fw-medium" style={labelStyle}>
               Full Name
             </label>
             <input
@@ -78,13 +100,14 @@ const Register = () => {
               onChange={handleChange}
               required
               placeholder="Ahmed Ali"
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              className="form-control"
+              style={inputStyle}
             />
           </div>
 
           {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="mb-3">
+            <label className="form-label fw-medium" style={labelStyle}>
               Email Address
             </label>
             <input
@@ -94,40 +117,46 @@ const Register = () => {
               onChange={handleChange}
               required
               placeholder="you@example.com"
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              className="form-control"
+              style={inputStyle}
             />
           </div>
 
-          {/* Role */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          {/* Role Selector */}
+          <div className="mb-3">
+            <label className="form-label fw-medium" style={labelStyle}>
               I am a...
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="row g-2">
               {[
                 { value: "patient", label: "Patient", icon: "🧑‍⚕️" },
-                { value: "doctor", label: "Doctor", icon: "👨‍⚕️" },
+                { value: "doctor",  label: "Doctor",  icon: "👨‍⚕️" },
               ].map((item) => (
-                <button
-                  key={item.value}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, role: item.value })}
-                  className={`py-3 rounded-xl border-2 text-sm font-medium transition flex items-center justify-center gap-2
-                    ${formData.role === item.value
-                      ? "border-blue-500 bg-blue-50 text-blue-600"
-                      : "border-gray-200 text-gray-500 hover:border-gray-300"
-                    }`}
-                >
-                  <span>{item.icon}</span> {item.label}
-                </button>
+                <div key={item.value} className="col-6">
+                  <div
+                    onClick={() => setFormData({ ...formData, role: item.value })}
+                    className="text-center py-3 rounded cursor-pointer"
+                    style={{
+                      backgroundColor: formData.role === item.value ? "#1a2535" : "#252836",
+                      border: formData.role === item.value ? "2px solid #4e8ef7" : "2px solid transparent",
+                      borderRadius: "10px",
+                      cursor: "pointer",
+                      color: formData.role === item.value ? "#4e8ef7" : "#adb5bd",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    <div className="fs-4">{item.icon}</div>
+                    <div className="small fw-medium">{item.label}</div>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
 
           {/* Specialization — doctors only */}
           {formData.role === "doctor" && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="mb-3">
+              <label className="form-label fw-medium" style={labelStyle}>
                 Specialization
               </label>
               <input
@@ -136,14 +165,15 @@ const Register = () => {
                 value={formData.specialization}
                 onChange={handleChange}
                 placeholder="e.g. Cardiology"
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                className="form-control"
+                style={inputStyle}
               />
             </div>
           )}
 
           {/* Phone */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="mb-3">
+            <label className="form-label fw-medium" style={labelStyle}>
               Phone Number
             </label>
             <input
@@ -152,13 +182,14 @@ const Register = () => {
               value={formData.phone}
               onChange={handleChange}
               placeholder="01012345678"
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              className="form-control"
+              style={inputStyle}
             />
           </div>
 
           {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="mb-3">
+            <label className="form-label fw-medium" style={labelStyle}>
               Password
             </label>
             <input
@@ -168,13 +199,14 @@ const Register = () => {
               onChange={handleChange}
               required
               placeholder="Min. 6 characters"
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              className="form-control"
+              style={inputStyle}
             />
           </div>
 
           {/* Confirm Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="mb-4">
+            <label className="form-label fw-medium" style={labelStyle}>
               Confirm Password
             </label>
             <input
@@ -184,30 +216,40 @@ const Register = () => {
               onChange={handleChange}
               required
               placeholder="••••••••"
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              className="form-control"
+              style={inputStyle}
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn w-100 fw-semibold"
+            style={{
+              backgroundColor: "#4e8ef7",
+              color: "#ffffff",
+              borderRadius: "10px",
+              padding: "12px",
+              border: "none",
+            }}
           >
             {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                </svg>
+              <>
+                <span className="spinner-border spinner-border-sm me-2" />
                 Creating account...
-              </span>
+              </>
             ) : "Create Account"}
           </button>
+
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-5">
+        <p className="text-center small mt-3 mb-0" style={{ color: "#6c757d" }}>
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-600 font-semibold hover:underline">
+          <Link
+            to="/login"
+            style={{ color: "#4e8ef7" }}
+            className="fw-medium text-decoration-none"
+          >
             Sign in
           </Link>
         </p>

@@ -1,12 +1,27 @@
 import { createContext, useState, useContext } from 'react';
 
+// 1. Create the Context
 export const AuthContext = createContext();
 
-// 1. ADD THIS LINE: This allows other files to use the context easily
-export const useAuth = () => useContext(AuthContext);
+// 2. Create the Custom Hook (This is what DoctorDashboard calls!)
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  
+  // This safety net prevents the cryptic "cannot destructure" error
+  if (context === undefined) {
+    throw new Error("❌ useAuth is returning undefined! Make sure your App.jsx routes are wrapped in <AuthProvider>");
+  }
+  
+  return context;
+};
 
+// 3. Create the Provider
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  // I also added a tiny fix here so you don't get logged out when you refresh the page!
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
   const login = (userData, token) => {
     setUser(userData);
