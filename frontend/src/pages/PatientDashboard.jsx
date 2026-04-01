@@ -21,7 +21,7 @@ const statusTones = {
   released: "success",
 };
 
-const DoctorDashboard = () => {
+const PatientDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
@@ -34,7 +34,7 @@ const DoctorDashboard = () => {
         const res = await api.get("/requests");
         setRequests(res.data.requests || []);
       } catch (err) {
-        setError(err.response?.data?.message || err.response?.data?.msg || "Failed to load requests.");
+        setError(err.response?.data?.message || err.response?.data?.msg || "Failed to load your requests.");
       } finally {
         setLoading(false);
       }
@@ -45,10 +45,10 @@ const DoctorDashboard = () => {
 
   const stats = useMemo(
     () => [
-      { label: "All requests", value: requests.length },
-      { label: "Waiting review", value: requests.filter((item) => item.status === "results_ready").length },
+      { label: "My requests", value: requests.length },
+      { label: "In progress", value: requests.filter((item) => ["requested", "sample_collected", "processing"].includes(item.status)).length },
+      { label: "Ready to review", value: requests.filter((item) => item.status === "results_ready").length },
       { label: "Released", value: requests.filter((item) => item.status === "released").length },
-      { label: "Urgent", value: requests.filter((item) => item.urgency === "urgent").length },
     ],
     [requests]
   );
@@ -58,17 +58,14 @@ const DoctorDashboard = () => {
       <div className="dashboard-shell">
         <header className="dashboard-topbar">
           <div>
-            <p className="dashboard-role">Doctor</p>
-            <h1 className="dashboard-title">Doctor dashboard</h1>
+            <p className="dashboard-role">Patient</p>
+            <h1 className="dashboard-title">Patient dashboard</h1>
             <p className="dashboard-subtitle">
-              Welcome, {user?.name || "Doctor"}. Review your requests and create new lab work easily.
+              Welcome, {user?.name || "Patient"}. Follow the current status of your lab requests in one place.
             </p>
           </div>
 
           <div className="dashboard-actions">
-            <button className="dashboard-button dashboard-button-secondary" onClick={() => navigate("/doctor/create-request")}>
-              New request
-            </button>
             <button
               className="dashboard-button dashboard-button-ghost"
               onClick={() => {
@@ -93,23 +90,21 @@ const DoctorDashboard = () => {
         <section className="dashboard-panel">
           <div className="dashboard-panel-header">
             <div>
-              <h2>Your requests</h2>
-              <p>Track each patient request and open the full details page when needed.</p>
+              <h2>Your request history</h2>
+              <p>Open any request to see tests, notes, and result progress.</p>
             </div>
           </div>
 
-          {loading && <p className="dashboard-state">Loading requests...</p>}
+          {loading && <p className="dashboard-state">Loading your requests...</p>}
           {!loading && error && <p className="dashboard-state dashboard-state-error">{error}</p>}
-          {!loading && !error && requests.length === 0 && (
-            <p className="dashboard-state">No requests found yet. Start by creating your first request.</p>
-          )}
+          {!loading && !error && requests.length === 0 && <p className="dashboard-state">You do not have any requests yet.</p>}
 
           {!loading && !error && requests.length > 0 && (
             <div className="dashboard-table-wrap">
               <table className="dashboard-table">
                 <thead>
                   <tr>
-                    <th>Patient</th>
+                    <th>Doctor</th>
                     <th>Status</th>
                     <th>Urgency</th>
                     <th>Created</th>
@@ -120,8 +115,7 @@ const DoctorDashboard = () => {
                   {requests.map((request) => (
                     <tr key={request._id}>
                       <td>
-                        <strong>{request.patientId?.name || "Unknown patient"}</strong>
-                        <span>{request.patientId?.email || "No email"}</span>
+                        <strong>{request.doctorId?.name || "Unknown doctor"}</strong>
                       </td>
                       <td>
                         <span className={`dashboard-badge dashboard-badge-${statusTones[request.status] || "default"}`}>
@@ -135,8 +129,8 @@ const DoctorDashboard = () => {
                       </td>
                       <td>{new Date(request.createdAt).toLocaleDateString()}</td>
                       <td>
-                        <Link className="dashboard-link dashboard-link-button" to={`/doctor/requests/${request._id}`}>
-                          View request
+                        <Link className="dashboard-link dashboard-link-button" to={`/requests/${request._id}`}>
+                          View details
                         </Link>
                       </td>
                     </tr>
@@ -151,4 +145,4 @@ const DoctorDashboard = () => {
   );
 };
 
-export default DoctorDashboard;
+export default PatientDashboard;

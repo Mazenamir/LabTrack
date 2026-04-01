@@ -1,10 +1,15 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
+
+const roles = [
+  { value: "patient", label: "Patient", hint: "Track your lab requests and results." },
+  { value: "doctor", label: "Doctor", hint: "Create requests and follow case progress." },
+  { value: "technician", label: "Technician", hint: "Review queue items and update status." },
+];
 
 const Register = () => {
   const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -14,11 +19,19 @@ const Register = () => {
     specialization: "",
     phone: "",
   });
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleRoleChange = (role) => {
+    setFormData((current) => ({
+      ...current,
+      role,
+      specialization: role === "patient" ? "" : current.specialization,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -26,10 +39,8 @@ const Register = () => {
     setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      return setError("Passwords do not match");
-    }
-    if (formData.password.length < 6) {
-      return setError("Password must be at least 6 characters");
+      setError("Passwords do not match");
+      return;
     }
 
     setLoading(true);
@@ -43,217 +54,159 @@ const Register = () => {
     }
   };
 
-  const inputStyle = {
-    backgroundColor: "#252836",
-    color: "#ffffff",
-    borderRadius: "10px",
-    padding: "12px 16px",
-    border: "none",
-  };
-
-  const labelStyle = {
-    color: "#adb5bd",
-    fontSize: "14px",
-  };
-
   return (
-    <div
-      className="min-vh-100 d-flex align-items-center justify-content-center py-5"
-      style={{ backgroundColor: "#0f1117" }}
-    >
-      <div
-        className="card p-4 border-0 shadow-lg"
-        style={{
-          width: "100%",
-          maxWidth: "460px",
-          backgroundColor: "#1a1d27",
-          borderRadius: "16px",
-        }}
-      >
-        {/* Logo */}
-        <div className="text-center mb-4">
-          <h2 className="fw-bold" style={{ color: "#4e8ef7" }}>🧬 LabTrack</h2>
-          <p className="small" style={{ color: "#6c757d" }}>Create your account</p>
+    <div className="auth-page">
+      <div className="auth-orb auth-orb-large" />
+      <div className="auth-orb auth-orb-small auth-orb-right" />
+      <div className="auth-stage">
+        <div className="auth-brand auth-brand-center">
+          <span className="auth-brand-badge auth-brand-badge-warm" />
+          <span>LabTrack</span>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div
-            className="alert border-0 py-2 small mb-3"
-            style={{ backgroundColor: "#2d1b1b", color: "#ff6b6b" }}
-          >
-            ⚠️ {error}
-          </div>
-        )}
+        <div className="auth-hero">
+          <p className="auth-overline">Create account</p>
+          <h1 className="auth-hero-title">Join the workspace</h1>
+          <p className="auth-hero-copy">Set up your profile and start using the platform in a few steps.</p>
+        </div>
 
-        <form onSubmit={handleSubmit}>
+        <section className="auth-card auth-card-centered auth-card-wide">
+          <form className="auth-form auth-form-tight" onSubmit={handleSubmit}>
+            {error && <div className="auth-alert">{error}</div>}
 
-          {/* Full Name */}
-          <div className="mb-3">
-            <label className="form-label fw-medium" style={labelStyle}>
-              Full Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              placeholder="Ahmed Ali"
-              className="form-control"
-              style={inputStyle}
-            />
-          </div>
-
-          {/* Email */}
-          <div className="mb-3">
-            <label className="form-label fw-medium" style={labelStyle}>
-              Email Address
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="you@example.com"
-              className="form-control"
-              style={inputStyle}
-            />
-          </div>
-
-          {/* Role Selector */}
-          <div className="mb-3">
-            <label className="form-label fw-medium" style={labelStyle}>
-              I am a...
-            </label>
-            <div className="row g-2">
-              {[
-                { value: "patient", label: "Patient", icon: "🧑‍⚕️" },
-                { value: "doctor",  label: "Doctor",  icon: "👨‍⚕️" },
-              ].map((item) => (
-                <div key={item.value} className="col-6">
-                  <div
-                    onClick={() => setFormData({ ...formData, role: item.value })}
-                    className="text-center py-3 rounded cursor-pointer"
-                    style={{
-                      backgroundColor: formData.role === item.value ? "#1a2535" : "#252836",
-                      border: formData.role === item.value ? "2px solid #4e8ef7" : "2px solid transparent",
-                      borderRadius: "10px",
-                      cursor: "pointer",
-                      color: formData.role === item.value ? "#4e8ef7" : "#adb5bd",
-                      transition: "all 0.2s",
-                    }}
+            <div className="auth-field">
+              <label>I am registering as</label>
+              <div className="auth-role-grid">
+                {roles.map((role) => (
+                  <button
+                    key={role.value}
+                    type="button"
+                    className={`auth-role-button ${formData.role === role.value ? "is-active" : ""}`}
+                    onClick={() => handleRoleChange(role.value)}
                   >
-                    <div className="fs-4">{item.icon}</div>
-                    <div className="small fw-medium">{item.label}</div>
-                  </div>
+                    <strong>{role.label}</strong>
+                    <span>{role.hint}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="auth-row">
+              <div className="auth-field">
+                <label htmlFor="name">Full name</label>
+                <div className="auth-input-row">
+                  <span className="auth-input-icon">A</span>
+                  <input
+                    id="name"
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    placeholder="John Smith"
+                    className="auth-input auth-input-plain"
+                  />
                 </div>
-              ))}
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="phone">Phone</label>
+                <div className="auth-input-row">
+                  <span className="auth-input-icon">#</span>
+                  <input
+                    id="phone"
+                    type="text"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="01012345678"
+                    className="auth-input auth-input-plain"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Specialization — doctors only */}
-          {formData.role === "doctor" && (
-            <div className="mb-3">
-              <label className="form-label fw-medium" style={labelStyle}>
-                Specialization
-              </label>
-              <input
-                type="text"
-                name="specialization"
-                value={formData.specialization}
-                onChange={handleChange}
-                placeholder="e.g. Cardiology"
-                className="form-control"
-                style={inputStyle}
-              />
+            <div className="auth-field">
+              <label htmlFor="email">Email address</label>
+              <div className="auth-input-row">
+                <span className="auth-input-icon">@</span>
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="you@hospital.com"
+                  className="auth-input auth-input-plain"
+                />
+              </div>
             </div>
-          )}
 
-          {/* Phone */}
-          <div className="mb-3">
-            <label className="form-label fw-medium" style={labelStyle}>
-              Phone Number
-            </label>
-            <input
-              type="text"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="01012345678"
-              className="form-control"
-              style={inputStyle}
-            />
+            {(formData.role === "doctor" || formData.role === "technician") && (
+              <div className="auth-field">
+                <label htmlFor="specialization">Specialization</label>
+                <div className="auth-input-row">
+                  <span className="auth-input-icon">+</span>
+                  <input
+                    id="specialization"
+                    type="text"
+                    name="specialization"
+                    value={formData.specialization}
+                    onChange={handleChange}
+                    placeholder="Hematology or microbiology"
+                    className="auth-input auth-input-plain"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="auth-row">
+              <div className="auth-field">
+                <label htmlFor="password">Password</label>
+                <div className="auth-input-row">
+                  <span className="auth-input-icon">*</span>
+                  <input
+                    id="password"
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    placeholder="Minimum 6 characters"
+                    className="auth-input auth-input-plain"
+                  />
+                </div>
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="confirmPassword">Confirm password</label>
+                <div className="auth-input-row">
+                  <span className="auth-input-icon">*</span>
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    required
+                    placeholder="Repeat your password"
+                    className="auth-input auth-input-plain"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" disabled={loading} className="auth-submit auth-submit-bright">
+              {loading ? "Creating account..." : "Create account"}
+            </button>
+          </form>
+
+          <div className="auth-links-row">
+            <Link to="/login">Already have an account?</Link>
+            <Link to="/login">Sign in</Link>
           </div>
-
-          {/* Password */}
-          <div className="mb-3">
-            <label className="form-label fw-medium" style={labelStyle}>
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="Min. 6 characters"
-              className="form-control"
-              style={inputStyle}
-            />
-          </div>
-
-          {/* Confirm Password */}
-          <div className="mb-4">
-            <label className="form-label fw-medium" style={labelStyle}>
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              placeholder="••••••••"
-              className="form-control"
-              style={inputStyle}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn w-100 fw-semibold"
-            style={{
-              backgroundColor: "#4e8ef7",
-              color: "#ffffff",
-              borderRadius: "10px",
-              padding: "12px",
-              border: "none",
-            }}
-          >
-            {loading ? (
-              <>
-                <span className="spinner-border spinner-border-sm me-2" />
-                Creating account...
-              </>
-            ) : "Create Account"}
-          </button>
-
-        </form>
-
-        <p className="text-center small mt-3 mb-0" style={{ color: "#6c757d" }}>
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            style={{ color: "#4e8ef7" }}
-            className="fw-medium text-decoration-none"
-          >
-            Sign in
-          </Link>
-        </p>
-
+        </section>
       </div>
     </div>
   );

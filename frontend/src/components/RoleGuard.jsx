@@ -4,14 +4,17 @@ import { useAuth } from "../context/AuthContext";
 const RoleGuard = ({ children, roles }) => {
   const { user, loading } = useAuth();
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="text-4xl mb-2">🧬</div>
-        <p className="text-gray-400 text-sm">Loading...</p>
+  if (loading) {
+    return (
+      <div className="dashboard-page">
+        <div className="dashboard-shell">
+          <div className="dashboard-panel">
+            <p className="dashboard-state">Loading...</p>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   if (!user) return <Navigate to="/login" />;
   if (!roles.includes(user.role)) return <Navigate to="/unauthorized" />;
