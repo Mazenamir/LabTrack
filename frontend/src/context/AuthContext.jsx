@@ -1,16 +1,5 @@
-import { createContext, useContext, useState } from "react";
-
-export const AuthContext = createContext();
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-
-  if (context === undefined) {
-    throw new Error("useAuth must be used inside AuthProvider.");
-  }
-
-  return context;
-};
+import { useState } from "react";
+import { AuthContext } from "./AuthContextConstants";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {

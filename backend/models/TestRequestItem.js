@@ -1,6 +1,6 @@
 const mongoose = require("mongoose") ;
 
-const tesrRequestItemSchema = new mongoose.Schema(
+const testRequestItemSchema = new mongoose.Schema(
 
 {
 testRequestId : {
@@ -35,8 +35,8 @@ testRequestId : {
 {timestamps : true})
 
 
-const testRequestItem = mongoose.model ("testRequestItem" , tesrRequestItemSchema)
+const TestRequestItem = mongoose.model ("TestRequestItem" , testRequestItemSchema)
 
-module.exports = testRequestItem ; 
+module.exports = TestRequestItem ; 
 
 

@@ -1,13 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { register , login , getMe} = require("../controllers/userController");
+const { register, login, getMe, verifyEmail } = require("../controllers/userController");
 const { verifyToken } = require("../middleware/userMiddleware");
 const { allowRoles } = require("../middleware/roleMiddleware");
 const User = require("../models/User");
 
 router.post("/register", register);
-
 router.post("/login", login);
+router.get("/verify/:token", verifyEmail);
 
 
 
@@ -35,13 +35,35 @@ router.get("/patients", verifyToken, allowRoles("doctor", "admin"), async (req, 
 
 
 
-// GET /api/users/search?patientCode=P-001
+// GET /api/users/search?q=John or /api/users/search?patientCode=P-001
 router.get("/search", verifyToken, allowRoles("doctor", "admin"), async (req, res) => {
   try {
-    const { patientCode } = req.query;
-    const user = await User.findOne({ patientCode, role: "patient" }).select("-password");
-    if (!user) return res.status(404).json({ message: "Patient not found" });
-    res.json({ user });
+    const search = (req.query.q || req.query.patientCode || "").trim();
+    if (!search) {
+      return res.status(400).json({ message: "Search term is required" });
+    }
+
+    let users = [];
+    if (req.query.patientCode || /^P-?\d+$/i.test(search)) {
+      const patientCode = search.toUpperCase().replace(/^P-?/, "P-");
+      const user = await User.findOne({ patientCode, role: "patient" }).select("-password");
+      if (user) {
+        users.push(user);
+      }
+    }
+
+    if (users.length === 0) {
+      users = await User.find({
+        role: "patient",
+        name: { $regex: search, $options: "i" },
+      }).select("-password");
+    }
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    res.json({ users });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }

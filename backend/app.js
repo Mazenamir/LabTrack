@@ -4,8 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const testTypeRoutes = require("./routes/testTypeRoutes"); 
 const requestRoutes = require("./routes/requestRoutes");
-
-// require("dotenv").config(); 
+const testRoutes = require("./routes/test");
 
 const app = express();
 
@@ -40,7 +39,7 @@ const userRoutes = require("./routes/userRoutes");
 app.use("/api/users", userRoutes);
 app.use("/api/tests", testTypeRoutes); 
 app.use("/api/requests", requestRoutes);
-
+app.use(testRoutes);
 
 // ─── Start Server ─────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;

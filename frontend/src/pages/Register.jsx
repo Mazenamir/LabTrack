@@ -21,6 +21,7 @@ const Register = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -45,7 +46,15 @@ const Register = () => {
 
     setLoading(true);
     try {
-      await api.post("/users/register", formData);
+      const res = await api.post("/users/register", formData);
+      const patientCode = res.data.user?.patientCode;
+      if (formData.role === "patient" && patientCode) {
+        const message = `Registration successful! Your patient code is ${patientCode}. Please save it for future requests.`;
+        setSuccess(message);
+        window.alert(message);
+      } else {
+        setSuccess("Registration successful! Please log in.");
+      }
       navigate("/login");
     } catch (err) {
       setError(err.response?.data?.message || err.response?.data?.msg || "Registration failed");
@@ -73,6 +82,7 @@ const Register = () => {
         <section className="auth-card auth-card-centered auth-card-wide">
           <form className="auth-form auth-form-tight" onSubmit={handleSubmit}>
             {error && <div className="auth-alert">{error}</div>}
+            {success && <div className="auth-success">{success}</div>}
 
             <div className="auth-field">
               <label>I am registering as</label>

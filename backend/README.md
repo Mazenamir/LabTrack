@@ -47,7 +47,7 @@ LabTrack defines four distinct user roles. Each role has its own dashboard, data
 
 - Unauthenticated users: access to login and registration pages only
 - Doctors: can only see and act on requests they personally created
-- Lab Technicians: can only see requests in their queue; cannot view other patients' data
+- Lab Technicians: can only see requests that are unassigned or assigned to themselves; requests claimed by another technician are hidden.
 - Patients: can only view their own requests and results
 - Admins: full read/write access across all platform data
 

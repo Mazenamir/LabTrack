@@ -1,6 +1,8 @@
 const TestRequest = require("../models/TestRequest");
 const TestRequestItem = require("../models/TestRequestItem");
 const User = require("../models/User");
+const sendEmail = require("../utils/sendEmail");
+const generateResultsPdf = require("../utils/generateResultsPdf");
 
 
 // -----------Request (DOCTOR) -----------------
@@ -17,7 +19,7 @@ try {
         return res.status(404).json({msg : "patient not found"}) ; 
 
 
-    //crate the request 
+    //create the request 
 
     const request =  await TestRequest.create({
         patientId,
@@ -33,6 +35,25 @@ try {
           testTypeId,
         })
       )
+    );
+
+    // ─── Send notification email to patient ────────────────────
+    const urgencyText = urgency === "urgent" ? "⚠️ HIGH PRIORITY" : "Normal";
+    
+    await sendEmail(
+      patient.email,
+      `🧬 New Lab Test Request - ${urgencyText}`,
+      `
+        <h2>New Lab Test Request</h2>
+        <p>Hi ${patient.name},</p>
+        <p>Your doctor has ordered a new lab test for you.</p>
+        <p><strong>Urgency:</strong> ${urgencyText}</p>
+        <p><strong>Request ID:</strong> ${request._id}</p>
+        <p><strong>Number of Tests:</strong> ${items.length}</p>
+        ${notes ? `<p><strong>Doctor's Notes:</strong> ${notes}</p>` : ""}
+        <p>Our laboratory will contact you shortly to arrange sample collection.</p>
+        <p>Best regards,<br>LabTrack Team</p>
+      `
     );
 
     res.status(201).json({msg : "Request created successfully", request, items});
@@ -55,10 +76,15 @@ const listRequests = async (req , res) => {
     } else if (req.user.role === "patient") {
       filter = {patientId : req.user.id}
     } else if (req.user.role === "technician") {
+        // ─── Technicians see unclaimed requests OR their own claimed requests ───────
         filter = {
           status: {
             $in: ["requested", "sample_collected", "processing", "results_ready"],
           },
+          $or: [
+            { technicianId: null },  // Unclaimed requests
+            { technicianId: req.user.id }  // Their own claimed requests
+          ]
         };
     }
   
@@ -70,7 +96,7 @@ const listRequests = async (req , res) => {
   
     res.status(200).json ({requests}) ;
   } catch (error) {
-    res.status(500).json({msq : "Server Error" , error : error.message})
+    res.status(500).json({msg : "Server Error" , error : error.message})
 
     
   }
@@ -105,6 +131,16 @@ const getRequest = async (req, res) => {
       return res.status(403).json({ msg: "Access denied" });
     }
 
+    // ─── Technicians can only view unclaimed or their own assigned requests ───────
+    if (req.user.role === "technician") {
+      const isUnclaimed = !request.technicianId;
+      const isAssignedToThisTechnician = request.technicianId?.toString() === req.user.id;
+      
+      if (!isUnclaimed && !isAssignedToThisTechnician) {
+        return res.status(403).json({ msg: "Access denied - This request is claimed by another technician" });
+      }
+    }
+
     const items = await TestRequestItem.find({
       testRequestId: request._id,
     }).populate("testTypeId", "name category normalRange unit");
@@ -125,7 +161,9 @@ const updateStatus = async (req , res) => {
 try {
   const {status , techinicianId} = req.body
 
-  const request = await TestRequest.findById(req.params.id) ;
+  const request = await TestRequest.findById(req.params.id)
+    .populate("patientId", "name email")
+    .populate("doctorId", "name email");
 
   if (!request) {
     return  res.status(404) .json ({msg : "request not found"}) ;
@@ -160,6 +198,16 @@ try {
       return res.status(403).json({ msg: "Only doctors can update this stage" });
     }
 
+    // ─── Technicians can only update unclaimed or their own assigned requests ───────
+    if (req.user.role === "technician") {
+      const isUnclaimed = !request.technicianId;
+      const isAssignedToThisTechnician = request.technicianId?.toString() === req.user.id;
+      
+      if (!isUnclaimed && !isAssignedToThisTechnician) {
+        return res.status(403).json({ msg: "This request is already being worked on by another technician" });
+      }
+    }
+
     // ─── Assign technician when sample is collected ────────────
     if (status === "sample_collected") {
       request.technicianId = req.user.id;
@@ -168,6 +216,55 @@ try {
     // ─── Apply the new status ─────────────────────────────────
     request.status = status;
     await request.save();
+
+    // ─── Send notification email to patient ────────────────────
+    const statusMessages = {
+      sample_collected: "Your lab test sample has been collected. We're now processing it.",
+      processing: "Your test is currently being processed in the lab.",
+      results_ready: "Your test results are ready for review.",
+      reviewed: "Your test results have been reviewed by the doctor.",
+      released: "Your test results have been released. You can now view them.",
+    };
+
+    const emailSubject = {
+      sample_collected: "Lab Sample Collected ✓",
+      processing: "Test in Progress 🔬",
+      results_ready: "Results Ready 📋",
+      reviewed: "Results Reviewed ✓",
+      released: "Results Released 🎉",
+    };
+
+    const patientEmail = request.patientId.email;
+    const patientName = request.patientId.name;
+
+    let attachments = [];
+
+    if (status === "results_ready") {
+      const items = await TestRequestItem.find({ testRequestId: request._id })
+        .populate("testTypeId", "name category normalRange unit");
+
+      const pdfBuffer = await generateResultsPdf(request, items);
+
+      attachments.push({
+        filename: `LabResults-${request._id}.pdf`,
+        content: pdfBuffer,
+      });
+    }
+
+    await sendEmail(
+      patientEmail,
+      emailSubject[status],
+      `
+        <h2>Lab Test Update</h2>
+        <p>Hi ${patientName},</p>
+        <p>${statusMessages[status]}</p>
+        <p><strong>Status:</strong> ${status.replace(/_/g, " ").toUpperCase()}</p>
+        <p>Request ID: ${request._id}</p>
+        <p>If you have any questions, please contact your doctor.</p>
+        <p>Best regards,<br>LabTrack Team</p>
+      `,
+      attachments
+    );
 
     res.status(200).json({ msg: "Status updated successfully", request });
 

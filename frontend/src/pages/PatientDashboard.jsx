@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import api from "../api/axios";
 
 const statusLabels = {
@@ -63,6 +63,8 @@ const PatientDashboard = () => {
             <p className="dashboard-subtitle">
               Welcome, {user?.name || "Patient"}. Follow the current status of your lab requests in one place.
             </p>
+            <p>Your code : {user?.patientCode ?? "Not assigned yet"}</p>
+            
           </div>
 
           <div className="dashboard-actions">

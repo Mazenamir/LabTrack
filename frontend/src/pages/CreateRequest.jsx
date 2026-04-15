@@ -6,6 +6,7 @@ const CreateRequest = () => {
   const navigate = useNavigate();
   const [testTypes, setTestTypes] = useState([]);
   const [patientResult, setPatientResult] = useState(null);
+  const [patientResults, setPatientResults] = useState([]);
   const [patientSearch, setPatientSearch] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
@@ -32,22 +33,29 @@ const CreateRequest = () => {
   }, []);
 
   const handlePatientSearch = async () => {
-    if (!patientSearch.trim()) return;
+    const query = patientSearch.trim();
+    if (!query) return;
 
     setSearchLoading(true);
     setSearchError("");
     setPatientResult(null);
+    setPatientResults([]);
+    setFormData((prev) => ({ ...prev, patientId: "" }));
 
     try {
-      const res = await api.get(`/users/search?patientCode=${patientSearch.trim()}`);
-      if (res.data.user) {
-        setPatientResult(res.data.user);
-        setFormData((prev) => ({ ...prev, patientId: res.data.user._id }));
+      const res = await api.get(`/users/search?q=${encodeURIComponent(query)}`);
+      const users = res.data.users || [];
+
+      if (users.length === 1) {
+        setPatientResult(users[0]);
+        setFormData((prev) => ({ ...prev, patientId: users[0]._id }));
+      } else if (users.length > 1) {
+        setPatientResults(users);
       } else {
-        setSearchError("No patient found with this ID.");
+        setSearchError("No patient found with this name or code.");
       }
     } catch (err) {
-      setSearchError(err.response?.data?.message || err.response?.data?.msg || "No patient found with this ID.");
+      setSearchError(err.response?.data?.message || err.response?.data?.msg || "No patient found with this name or code.");
     } finally {
       setSearchLoading(false);
     }
@@ -111,7 +119,7 @@ const CreateRequest = () => {
             {error && <div className="form-alert">{error}</div>}
 
             <div className="form-field">
-              <label htmlFor="patientSearch">Patient code</label>
+              <label htmlFor="patientSearch">Patient name or code</label>
               <div className="form-search-row">
                 <input
                   id="patientSearch"
@@ -120,10 +128,11 @@ const CreateRequest = () => {
                   onChange={(e) => {
                     setPatientSearch(e.target.value);
                     setPatientResult(null);
+                    setPatientResults([]);
                     setFormData((prev) => ({ ...prev, patientId: "" }));
                     setSearchError("");
                   }}
-                  placeholder="Example: P-001"
+                  placeholder="Search by patient name or code"
                   className="form-input"
                 />
                 <button type="button" className="dashboard-button dashboard-button-secondary" onClick={handlePatientSearch} disabled={searchLoading}>
@@ -131,6 +140,26 @@ const CreateRequest = () => {
                 </button>
               </div>
               {searchError && <p className="form-note" style={{ color: "#a74432" }}>{searchError}</p>}
+              {patientResults.length > 1 && (
+                <div className="form-note">
+                  <p>Select a patient from the results below:</p>
+                  {patientResults.map((user) => (
+                    <button
+                      type="button"
+                      key={user._id}
+                      className="form-pill"
+                      onClick={() => {
+                        setPatientResult(user);
+                        setFormData((prev) => ({ ...prev, patientId: user._id }));
+                        setPatientResults([]);
+                      }}
+                    >
+                      <strong>{user.name}</strong>
+                      <span>{user.email} - {user.patientCode}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
               {patientResult && (
                 <div className="form-pill">
                   <strong>{patientResult.name}</strong>
